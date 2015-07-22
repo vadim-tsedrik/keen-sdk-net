@@ -134,8 +134,9 @@ namespace Keen.Core
         /// Check the 'error_code' field and throw the appropriate exception if non-null.
         /// </summary>
         /// <param name="apiResponse">Deserialized json response from a Keen API call.</param>
-        public static void CheckApiErrorCode(dynamic apiResponse)
+        public static void CheckApiErrorCode(JContainer apiResponse)
         {
+            if (apiResponse == null) return;
             if (apiResponse is JArray) return;
             
             var errorCode = (string) apiResponse.SelectToken("$.error_code");

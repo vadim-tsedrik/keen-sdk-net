@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.Net;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,7 +27,7 @@ namespace Keen.Core
                     .ConfigureAwait(continueOnCapturedContext: false);
                 var responseString = await responseMsg.Content.ReadAsStringAsync()
                     .ConfigureAwait(continueOnCapturedContext: false);
-                dynamic response = JObject.Parse(responseString);
+                var response = JObject.Parse(responseString);
 
                 // error checking, throw an exception with information from the json 
                 // response if available, then check the HTTP response.
@@ -60,17 +61,28 @@ namespace Keen.Core
                 contentStream.Headers.Add("content-type", "application/json");
 
                 client.DefaultRequestHeaders.Add("Authorization", _prjSettings.WriteKey);
-                var httpResponse = await client.PostAsync(_serverUrl + collection, contentStream)
-                    .ConfigureAwait(continueOnCapturedContext: false);
-                var responseString = await httpResponse.Content.ReadAsStringAsync()
-                    .ConfigureAwait(continueOnCapturedContext: false);
+                string responseString= null;
+                HttpResponseMessage httpResponse = null;
+                try
+                {
+                    httpResponse = await client.PostAsync(_serverUrl + collection, contentStream)
+                        .ConfigureAwait(continueOnCapturedContext: false);
+                    responseString = await httpResponse.Content.ReadAsStringAsync()
+                        .ConfigureAwait(continueOnCapturedContext: false);
+                }
+                catch (Exception)
+                {
+                    //throw new KeenException("AddEvent failed. Api is not available now.");
+                }
+
                 JObject jsonResponse = null;
                 try
                 {
                     // Normally the response content should be parsable JSON,
                     // but if the server returned a 404 error page or something
                     // like that, this will throw. 
-                    jsonResponse = JObject.Parse(responseString);
+                    if (!string.IsNullOrWhiteSpace(responseString))
+                        jsonResponse = JObject.Parse(responseString);
                 }
                 catch (Exception) 
                 { }
@@ -78,7 +90,7 @@ namespace Keen.Core
                 // error checking, throw an exception with information from the 
                 // json response if available, then check the HTTP response.
                 KeenUtil.CheckApiErrorCode(jsonResponse);
-                if (!httpResponse.IsSuccessStatusCode)
+                if (httpResponse != null && httpResponse.StatusCode != HttpStatusCode.NotFound && !httpResponse.IsSuccessStatusCode)
                     throw new KeenException("AddEvent failed with status: " + httpResponse);
             }
         }

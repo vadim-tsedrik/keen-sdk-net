@@ -32,7 +32,7 @@ namespace Keen.Core
                     .ConfigureAwait(continueOnCapturedContext: false);
                 var responseString = await responseMsg.Content.ReadAsStringAsync()
                     .ConfigureAwait(continueOnCapturedContext: false);
-                dynamic response = JArray.Parse(responseString);
+                var response = JArray.Parse(responseString);
 
                 // error checking, throw an exception with information from the json 
                 // response if available, then check the HTTP response.

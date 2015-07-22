@@ -189,7 +189,7 @@ namespace Keen.Core
         /// a value for the project settings Master API key.
         /// </summary>
         /// <param name="collection"></param>
-        public async Task<dynamic> GetSchemaAsync(string collection)
+        public async Task<JObject> GetSchemaAsync(string collection)
         {
             // Preconditions
             KeenUtil.ValidateEventCollectionName(collection);
@@ -205,7 +205,7 @@ namespace Keen.Core
         /// a value for the project settings Master API key.
         /// </summary>
         /// <param name="collection"></param>
-        public dynamic GetSchema(string collection)
+        public JObject GetSchema(string collection)
         {
             try
             {
